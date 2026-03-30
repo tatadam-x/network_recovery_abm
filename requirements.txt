@@ -1,0 +1,6 @@
+\uFEFFstreamlit
+mesa
+networkx
+numpy
+pandas
+matplotlib

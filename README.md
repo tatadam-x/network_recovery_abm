@@ -15,11 +15,11 @@ The project includes:
 
 The model compares five recovery regimes:
 
-- **DS** — Directed Stabilization
-- **DA** — Directed Adaptation
-- **ES** — Emergent Stabilization
-- **EA** — Emergent Adaptation
-- **HY** — Hybrid
+- **DS** \u2014 Directed Stabilization
+- **DA** \u2014 Directed Adaptation
+- **ES** \u2014 Emergent Stabilization
+- **EA** \u2014 Emergent Adaptation
+- **HY** \u2014 Hybrid
 
 These regimes differ in governance mode and recovery orientation.
 

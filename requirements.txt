@@ -1,4 +1,4 @@
-\uFEFFstreamlit
+streamlit
 mesa
 networkx
 numpy

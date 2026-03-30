@@ -42,6 +42,7 @@ network_recovery_models/
     streamlit_app.py
     requirements.txt
     README.md
+    LICENSE
 ```
 
 ## Installation

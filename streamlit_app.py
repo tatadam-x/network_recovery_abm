@@ -454,19 +454,34 @@ st.set_page_config(page_title="Network Recovery Regimes ABM", layout="wide")
 
 st.markdown("""
 <style>
+/* Move title higher */
 .block-container {
-    padding-top: 2rem;
+    padding-top: 2.8rem;
 }
-</style>
-""", unsafe_allow_html=True)
 
-st.markdown("""
-<style>
+/* Sidebar labels */
 [data-testid="stSidebar"] label,
 [data-testid="stSidebar"] .stMarkdown,
 [data-testid="stSidebar"] p {
     color: #0b3d91 !important;
     font-weight: 600;
+}
+
+/* Make sidebar buttons full width */
+[data-testid="stSidebar"] .stButton,
+[data-testid="stSidebar"] .stButton > button {
+    width: 100% !important;
+}
+
+/* Primary run button */
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+    color: #f0f2f6 !important;
+}
+
+/* Force all inner text/icons inside the primary button */
+[data-testid="stSidebar"] .stButton > button[kind="primary"] * {
+    color: #f0f2f6 !important;
+    fill: #f0f2f6 !important;
 }
 </style>
 """, unsafe_allow_html=True)

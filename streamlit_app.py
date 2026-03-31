@@ -14,20 +14,22 @@ from model_core import PARAMS, RecoveryModel, FirmAgent
 # -------------------------
 
 def run_comparison(
-    shock_type,
-    shock_severity,
-    network_type,
-    network_size,
-    simulation_length,
-    seed_count,
-    avg_degree,
-    evaluation_recovery_threshold,
-    hybrid_switch_perf,
-    bridge_prob,
-    rewire_prob,
-    progress_bar=None,
-    status_placeholder=None,
+        shock_type,
+        shock_severity,
+        network_type,
+        network_size,
+        simulation_length,
+        seed_count,
+        avg_degree,
+        evaluation_recovery_threshold,
+        hybrid_switch_perf,
+        bridge_prob,
+        rewire_prob,
+        community_count,
+        progress_bar=None,
+        status_placeholder=None,
 ):
+
     regimes = ["DS", "DA", "ES", "EA", "HY"]
 
     total_runs = seed_count * len(regimes)
@@ -55,6 +57,7 @@ def run_comparison(
             test_params["hybrid_switch_perf"] = hybrid_switch_perf
             test_params["bridge_prob"] = bridge_prob
             test_params["rewire_prob"] = rewire_prob
+            test_params["C"] = community_count
 
             model = RecoveryModel(test_params)
 
@@ -535,21 +538,16 @@ with st.sidebar:
         step=1
     )
 
-    evaluation_recovery_threshold = st.slider(
-        "Evaluation recovery threshold",
-        min_value=0.50,
-        max_value=1.00,
-        value=0.85,
-        step=0.05
-    )
-
-    hybrid_switch_perf = st.slider(
-        "HY switch threshold",
-        min_value=0.40,
-        max_value=1.00,
-        value=0.70,
-        step=0.02
-    )
+    if network_type == "modular_small_world":
+        community_count = st.slider(
+            "Number of communities",
+            min_value=2,
+            max_value=12,
+            value=5,
+            step=1
+        )
+    else:
+        community_count = int(PARAMS["C"])
 
     if network_type in ["modular_small_world", "core_periphery"]:
         bridge_prob = st.slider(
@@ -572,6 +570,21 @@ with st.sidebar:
         )
     else:
         rewire_prob = float(PARAMS["rewire_prob"])
+    evaluation_recovery_threshold = st.slider(
+        "Evaluation recovery threshold",
+        min_value=0.50,
+        max_value=1.00,
+        value=0.85,
+        step=0.05
+    )
+
+    hybrid_switch_perf = st.slider(
+        "HY switch threshold",
+        min_value=0.40,
+        max_value=1.00,
+        value=0.70,
+        step=0.02
+    )
 
     simulation_length = st.slider(
         "Steps",
@@ -621,6 +634,7 @@ if run_clicked:
         avg_degree=avg_degree,
         evaluation_recovery_threshold=evaluation_recovery_threshold,
         hybrid_switch_perf=hybrid_switch_perf,
+        community_count=community_count,
         bridge_prob=bridge_prob,
         rewire_prob=rewire_prob,
         progress_bar=progress_bar,
@@ -642,6 +656,9 @@ if run_clicked:
         "Evaluation threshold": f"{evaluation_recovery_threshold:.2f}",
         "HY switch threshold": f"{hybrid_switch_perf:.2f}",
     }
+
+    if network_type == "modular_small_world":
+        summary_rows["Number of communities"] = community_count
 
     if network_type in ["modular_small_world", "core_periphery"]:
         summary_rows["Bridge probability"] = f"{bridge_prob:.2f}"

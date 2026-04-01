@@ -206,10 +206,10 @@ def run_comparison(
 
     compact_pretty = compact_pretty.rename(columns={
         "regime": "Recovery regime",
-        "loss_t1_mean": "Performance loss at t = 1",
-        "recovery_time_mean": f"Time to reach {evaluation_recovery_threshold:.2f} performance",
-        "final_perf_mean": "Final performance",
-        "auc_perf_mean": "Cumulative performance",
+        "loss_t1_mean": "Recovery score loss at t = 1",
+        "recovery_time_mean": f"Time to reach {evaluation_recovery_threshold:.2f} recovery score",
+        "final_perf_mean": "Final recovery score",
+        "auc_perf_mean": "Cumulative recovery score",
         "final_new_ties_mean": "New ties formed",
         "final_innovation_mean": "Innovation stock",
         "mean_traj_sd": "Trajectory dispersion",
@@ -248,13 +248,13 @@ def run_comparison(
         "shock_severity": "Shock severity",
         "seed": "Seed",
         "regime": "Recovery regime",
-        "loss_t1": "Performance loss at t = 1",
-        "perf_t1": "Performance at t = 1",
-        "perf_t5": "Performance at t = 5",
-        "perf_t10": "Performance at t = 10",
-        "recovery_time": f"Time to reach {evaluation_recovery_threshold:.2f} performance",
-        "final_perf_net": "Final collective performance",
-        "auc_perf": "Cumulative performance",
+        "loss_t1": "Recovery score loss at t = 1",
+        "perf_t1": "Recovery score at t = 1",
+        "perf_t5": "Recovery score at t = 5",
+        "perf_t10": "Recovery score at t = 10",
+        "recovery_time": f"Time to reach {evaluation_recovery_threshold:.2f} recovery score",
+        "final_perf_net": "Final recovery score",
+        "auc_perf": "Cumulative recovery score",
         "final_active_pre_shock_ties": "Final active pre-shock ties",
         "final_new_ties_count": "Final new ties formed",
         "final_cross_community_ties": "Final cross-community ties",
@@ -289,7 +289,7 @@ def make_trajectory_figures(baseline_traj_df):
     figures = []
 
     for var, ylab, title in [
-        ("perf_loss_mean", "Mean performance loss", "Performance-loss trajectories"),
+        ("perf_loss_mean", "Mean recovery score loss", "Recovery-score loss trajectories"),
         ("active_pre_shock_ties_mean", "Mean active pre-shock ties", "Restoration trajectories"),
         ("new_ties_count_mean", "Mean new ties", "Novelty trajectories"),
     ]:
@@ -342,8 +342,8 @@ def make_bar_figures(baseline_df):
     figures = []
 
     for ycol, title, ylabel in [
-        ("final_perf_mean_pct_vs_DS", "Final performance vs DS", "Percent difference from DS"),
-        ("auc_perf_mean_pct_vs_DS", "Cumulative performance vs DS", "Percent difference from DS"),
+        ("final_perf_mean_pct_vs_DS", "Final recovery score vs DS", "Percent difference from DS"),
+        ("auc_perf_mean_pct_vs_DS", "Cumulative recovery score vs DS", "Percent difference from DS"),
         ("final_innovation_mean_pct_vs_DS", "Innovation stock vs DS", "Percent difference from DS"),
     ]:
         fig, ax = plt.subplots(figsize=(4.2, 3.0))
@@ -356,6 +356,7 @@ def make_bar_figures(baseline_df):
         figures.append(fig)
 
     return figures
+
 
 def make_joint_tradeoff_figure(baseline_df, simulation_length):
     plot_order = ["DS", "DA", "ES", "EA", "HY"]
@@ -377,14 +378,12 @@ def make_joint_tradeoff_figure(baseline_df, simulation_length):
 
     fig, ax = plt.subplots(figsize=(5.8, 4.2))
 
-    # Softer background
     fig.patch.set_facecolor("#f7f7f7")
     ax.set_facecolor("#f7f7f7")
 
     x_vals = summary["perf_t1_mean"].values
     y_vals = summary["final_innovation_mean"].values
 
-    # Dynamic zoom with padding
     x_min, x_max = x_vals.min(), x_vals.max()
     y_min, y_max = y_vals.min(), y_vals.max()
 
@@ -394,7 +393,6 @@ def make_joint_tradeoff_figure(baseline_df, simulation_length):
     ax.set_xlim(max(0, x_min - 0.35 * x_range), min(1.05, x_max + 0.35 * x_range))
     ax.set_ylim(max(0, y_min - 0.35 * y_range), y_max + 0.45 * y_range)
 
-    # Cleaner label offsets to reduce overlap
     label_offsets = {
         "DS": (0, 12),
         "DA": (0, 12),
@@ -436,11 +434,9 @@ def make_joint_tradeoff_figure(baseline_df, simulation_length):
     ax.set_xlabel("Short-term stability (t = 1)")
     ax.set_ylabel(f"Long-term innovation (t = {simulation_length})")
 
-    # Softer grid
     ax.grid(True, color="#d6d6d6", alpha=0.6, linewidth=0.8)
     ax.set_axisbelow(True)
 
-    # Light spines
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_color("#b0b0b0")
@@ -448,6 +444,7 @@ def make_joint_tradeoff_figure(baseline_df, simulation_length):
 
     fig.tight_layout()
     return fig
+
 
 # -------------------------
 # Streamlit UI
@@ -570,6 +567,7 @@ with st.sidebar:
         )
     else:
         rewire_prob = float(PARAMS["rewire_prob"])
+
     evaluation_recovery_threshold = st.slider(
         "Evaluation recovery threshold",
         min_value=0.50,
@@ -590,7 +588,7 @@ with st.sidebar:
         "Steps",
         min_value=10,
         max_value=500,
-        value=50,
+        value=30,
         step=10
     )
 

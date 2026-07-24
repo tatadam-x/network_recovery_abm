@@ -361,6 +361,14 @@ def make_bar_figures(baseline_df):
 def make_joint_tradeoff_figure(baseline_df, simulation_length):
     plot_order = ["DS", "DA", "ES", "EA", "HY"]
 
+    regime_labels = {
+        "DS": "CR",        # Centralized restorative
+        "DA": "CA",        # Centralized adaptive
+        "ES": "ER",        # Emergent restorative
+        "EA": "EA",        # Emergent adaptive
+        "HY": "CR → CA",   # Current hybrid sequence in the model
+    }
+
     summary = (
         baseline_df
         .groupby("regime", as_index=False)
@@ -419,7 +427,7 @@ def make_joint_tradeoff_figure(baseline_df, simulation_length):
 
         dx, dy = label_offsets.get(reg, (0, 10))
         ax.annotate(
-            reg,
+            regime_labels.get(reg, reg),
             (x, y),
             xytext=(dx, dy),
             textcoords="offset points",
@@ -430,9 +438,9 @@ def make_joint_tradeoff_figure(baseline_df, simulation_length):
             color="#222222"
         )
 
-    ax.set_title("Joint Comparison of Recovery Regimes: Stability vs Innovation", fontsize=11, pad=10)
-    ax.set_xlabel("Short-term stability (t = 1)")
-    ax.set_ylabel(f"Long-term innovation (t = {simulation_length})")
+    ax.set_title("Short-term Restoration vs. Long-term Innovation", fontsize=11, pad=10)
+    ax.set_xlabel("Short-term restoration: collective performance after the shock")
+    ax.set_ylabel(f"Long-term innovation: innovation stock at t = {simulation_length}")
 
     ax.grid(True, color="#d6d6d6", alpha=0.6, linewidth=0.8)
     ax.set_axisbelow(True)
@@ -698,7 +706,7 @@ if run_clicked:
         st.markdown("**Full results table**")
         st.dataframe(full_pretty, use_container_width=True)
 
-    st.subheader("Joint regime comparison")
+    st.subheader("Short-term Restoration vs. Long-term Innovation")
 
     left_col, center_col, right_col = st.columns([1, 2, 1])
     with center_col:

@@ -439,8 +439,8 @@ def make_joint_tradeoff_figure(baseline_df, simulation_length):
         )
 
     ax.set_title("Short-term Restoration vs. Long-term Innovation", fontsize=11, pad=10)
-    ax.set_xlabel("Short-term restoration: collective performance after the shock")
-    ax.set_ylabel(f"Long-term innovation: innovation stock at t = {simulation_length}")
+    ax.set_xlabel("Short-term restoration: t=1")
+    ax.set_ylabel(f"Long-term innovation: t={simulation_length}")
 
     ax.grid(True, color="#d6d6d6", alpha=0.6, linewidth=0.8)
     ax.set_axisbelow(True)

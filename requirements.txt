@@ -1,0 +1,7 @@
+# Core ABM and Streamlit dependencies
+mesa>=3.0,<4.0
+streamlit>=1.35,<2.0
+networkx>=3.0,<4.0
+numpy>=1.24,<3.0
+pandas>=2.0,<3.0
+matplotlib>=3.7,<4.0

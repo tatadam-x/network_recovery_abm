@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.streamlit/secrets.toml
+release_results/
+v5_screen/
+v6_screen/
+chain_screen/
+outputs/
+*.log
+.DS_Store

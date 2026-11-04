@@ -127,17 +127,18 @@ def download_frame(name, frame):
 
 st.set_page_config(page_title="Network Recovery | Research ABM", layout="wide",
                    page_icon="🔗")
-# Align the main title with the top of the sidebar's experiment parameters.
-# Streamlit's default main-column padding otherwise places the title much lower.
+# Keep the main heading and sidebar's first heading vertically aligned on desktop.
+# The sidebar has its own header area, so matching the two content paddings
+# would push the sidebar's controls lower than the page title.
 st.markdown(
     """
     <style>
     @media (min-width: 768px) {
         [data-testid="stMainBlockContainer"] {
-            padding-top: 2.25rem;
+            padding-top: 2.25rem !important;
         }
-        [data-testid="stSidebarUserContent"] {
-            padding-top: 2.25rem;
+        [data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+            padding-top: 0.25rem !important;
         }
     }
     </style>

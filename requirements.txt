@@ -1,6 +1,0 @@
-streamlit
-mesa
-networkx
-numpy
-pandas
-matplotlib

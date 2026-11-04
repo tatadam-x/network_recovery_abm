@@ -12,6 +12,8 @@ import pandas as pd
 
 from chain_experiments import priority_chain_scenarios, all_chain_scenarios
 from comparison_engine import compare_scenarios
+from benchmark_reporting import (prepare_benchmark_trajectories,
+                                 check_summary_alignment)
 from model_core import PARAMS
 
 
@@ -54,16 +56,27 @@ def main():
     runs,recovery,innovation=compare_scenarios(
         tuple(sorted(params.items())), scenarios, args.seeds
     )
-    means=runs.groupby("regime",sort=False,as_index=False).agg(
-        knowledge_gain=("knowledge_gain","mean"),
-        knowledge_gap_pct_vs_intact=("knowledge_gap_pct_vs_intact","mean"),
-        knowledge_gain_pct_vs_first_stage=("knowledge_gain_pct_vs_first_stage","mean"),
-        frontier_gap_vs_intact=("frontier_gap_vs_intact","mean"),
-        gini_gap_vs_intact=("gini_gap_vs_intact","mean"),
-        effective_domains_gap_vs_intact=("effective_domains_gap_vs_intact","mean"),
-        original_ties_retained=("original_ties_retained","mean"),
-        new_ties=("new_ties","mean"),
-        recovery_cost=("recovery_cost","mean"),
+    benchmarks = prepare_benchmark_trajectories(innovation)
+    check_summary_alignment(runs, benchmarks)
+    means = runs.groupby("mode", sort=False, as_index=False).agg(
+        pre_knowledge_gain=("pre_knowledge_gain", "mean"),
+        post_knowledge_gain=("knowledge_gain", "mean"),
+        intact_knowledge_gain=("intact_knowledge_gain", "mean"),
+        knowledge_gap_pct_vs_pre=("knowledge_gap_pct_vs_pre", "mean"),
+        knowledge_gap_pct_vs_intact=("knowledge_gap_pct_vs_intact", "mean"),
+        knowledge_gain_pct_vs_first_stage=("knowledge_gain_pct_vs_first_stage", "mean"),
+        pre_frontier_gain=("pre_frontier_gain", "mean"),
+        post_frontier_gain=("frontier_gain", "mean"),
+        intact_frontier_gain=("intact_frontier_gain", "mean"),
+        frontier_gap_vs_pre=("frontier_gap_vs_pre", "mean"),
+        frontier_gap_vs_intact=("frontier_gap_vs_intact", "mean"),
+        gini_gap_vs_pre=("gini_gap_vs_pre", "mean"),
+        gini_gap_vs_intact=("gini_gap_vs_intact", "mean"),
+        effective_domains_gap_vs_pre=("effective_domains_gap_vs_pre", "mean"),
+        effective_domains_gap_vs_intact=("effective_domains_gap_vs_intact", "mean"),
+        original_ties_retained=("original_ties_retained", "mean"),
+        new_ties=("new_ties", "mean"),
+        recovery_cost=("recovery_cost", "mean"),
     )
     out=Path(args.output_dir)
     out.mkdir(parents=True,exist_ok=True)
@@ -72,6 +85,7 @@ def main():
         ("comparison_means.csv",means),
         ("comparison_recovery_trajectories.csv",recovery),
         ("comparison_innovation_trajectories.csv",innovation),
+        ("comparison_benchmark_trajectories.csv",benchmarks),
     ):
         df.to_csv(out/filename,index=False)
     (out/"experiment_settings.json").write_text(json.dumps({
@@ -79,7 +93,8 @@ def main():
         "scenarios":[x[0] for x in scenarios],
         "params":params,
     },indent=2))
-    print(means[["regime","knowledge_gap_pct_vs_intact","new_ties"]].round(3)
+    print(means[["mode","knowledge_gap_pct_vs_pre",
+                 "knowledge_gap_pct_vs_intact","new_ties"]].round(3)
           .to_string(index=False))
     print(f"Results saved to {out.resolve()}")
 

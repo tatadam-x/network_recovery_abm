@@ -1,6 +1,6 @@
 # Network Recovery and Collective Innovation
 
-An agent-based computational model for studying how alternative recovery regimes and sequential recovery chains affect the structural reconstruction and innovative functioning of interorganizational networks.
+An agent-based computational model for studying how alternative recovery modes and sequential recovery chains affect the structural reconstruction and innovative functioning of interorganizational networks.
 
 The project includes a Streamlit app for interactive comparisons and a command-line runner for reproducible experiments. Model parameters and calibration choices remain exploratory research assumptions.
 
@@ -8,7 +8,7 @@ The project includes a Streamlit app for interactive comparisons and a command-l
 
 A common pre-shock network and knowledge distribution are subjected to a common disruption. Recovery then proceeds under one of four mechanisms:
 
-| Regime | Governance | Orientation |
+| Recovery mode | Governance | Orientation |
 | --- | --- | --- |
 | DS — Directed Stabilization | Centralized | Restore pre-shock ties |
 | DA — Directed Adaptation | Centralized | Coordinate restoration and selected new ties |
@@ -30,17 +30,17 @@ python -m streamlit run streamlit_app.py
 
 The app provides three comparison modes:
 
-1. **Recommended chains:** four foundational regimes plus DS → EA, ES → EA, DA → EA, and EA → DA.
-2. **Custom chain:** four foundational regimes and one chosen two-stage chain.
-3. **All recovery chains:** four foundational regimes and all 16 ordered two-stage combinations (including four same-regime checks).
+1. **Recommended chains:** four foundational recovery modes plus DS → EA, ES → EA, DA → EA, and EA → DA.
+2. **Custom chain:** four foundational recovery modes and one chosen two-stage chain.
+3. **All recovery chains:** four foundational recovery modes and all 16 ordered two-stage combinations (including four same-mode checks).
 
 The standard experiment uses **100 firms**, **10 recovery periods**, and **15 periods in each innovation window**. Paired seeds, alternative innovation formulations, and other technical assumptions appear under **Advanced settings**.
 
-Results include structural and knowledge trajectories, comparative outcomes, paired seed comparisons, and downloadable CSV files.
+Results prominently report **pre-shock, post-recovery, and paused-intact knowledge production** for equal-length windows, alongside paired percentage differences. Frontier advancement, changes in knowledge inequality, and effective knowledge diversity are also benchmark-adjusted. The charts show **cumulative within-window changes**, directly overlaying both pre-shock and intact-network references. Additional gap plots isolate differences against either reference. Structural recovery charts include pre-shock benchmark lines. All underlying observations are downloadable as CSV files.
 
 ## Command-line experiments
 
-Run the recommended set of recovery regimes and chains:
+Run the recommended set of recovery modes and chains:
 
 ```bash
 python run_comparison.py --seeds 10
@@ -52,7 +52,7 @@ Run all ordered chains:
 python run_comparison.py --mode all --seeds 10
 ```
 
-The runner saves per-seed results, summary tables, recovery and innovation trajectories, and experiment settings in `comparison_results/`. The app and runner share their comparison logic in `comparison_engine.py`.
+The runner saves per-seed results, benchmark-adjusted summary tables, recovery and innovation trajectories, **`comparison_benchmark_trajectories.csv`** containing both reference comparisons at every evaluation period, and experiment settings in `comparison_results/`. The app and runner share their comparison logic in `comparison_engine.py`.
 
 ## Test the model
 
@@ -72,17 +72,18 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for details.
 
 - `MODEL_SPECIFICATION.md` — modeling assumptions, mechanisms, and measures
 - `DEPLOYMENT.md` — local validation and Streamlit Community Cloud checklist
-- `model_core.py` — network generation, shocks, recovery regimes, and recovery chains
+- `model_core.py` — network generation, shocks, recovery modes, and recovery chains
 - `innovation_model.py` — knowledge initialization, production, and system-level outcomes
 - `comparison_engine.py` — paired experiments shared by app and runner
-- `chain_experiments.py` — available fixed regimes and recovery-chain sets
+- `benchmark_reporting.py` — aligned benchmark trajectories and endpoint consistency checks
+- `chain_experiments.py` — available standalone recovery modes and recovery-chain sets
 - `streamlit_app.py` — interactive application
 - `run_comparison.py` — batch experiments and CSV exports
 - `test_*.py` — automated checks
 
 ## Interpretation
 
-The model produces simulated outcomes conditional on its assumptions. The principal knowledge measures are aggregate knowledge production, knowledge-frontier advancement, and change in the Gini coefficient of firm knowledge stocks. Effective knowledge dimensions and structural outcomes are additional diagnostics. Differences between regimes should be assessed across paired seeds and sensitivity conditions; the model is not calibrated to external empirical data.
+The model produces simulated outcomes conditional on its assumptions. The principal knowledge measures are aggregate knowledge production, knowledge-frontier advancement, and change in the Gini coefficient of firm knowledge stocks. Effective knowledge dimensions and structural outcomes are additional diagnostics. Differences between recovery modes should be assessed across paired seeds and sensitivity conditions; the model is not calibrated to external empirical data.
 
 ## License
 

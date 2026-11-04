@@ -62,3 +62,18 @@ For systematic or longer experiments, run `python run_comparison.py --seeds 10` 
 Official deployment documentation:
 - https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy
 - https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/file-organization
+
+
+## Verify the scientific comparison after deploying
+
+Run the recommended comparison with two paired seeds as a smoke test.
+Confirm that the **Aggregate knowledge production** table reports pre-shock,
+post-recovery and paused-intact production in separate columns.
+The four innovation trajectory charts should include both reference lines,
+and the gap charts should offer pre-shock and paused-intact comparisons.
+
+All three innovation windows should begin at zero on the change plots. The
+final gap at the last evaluation period should agree with the corresponding
+benchmark-adjusted outcome in the tables and CSV exports.
+The downloadable `benchmark_trajectories.csv` includes every within-window
+change and paired difference for auditing.

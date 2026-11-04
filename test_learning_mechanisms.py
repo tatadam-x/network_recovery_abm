@@ -93,9 +93,9 @@ class CollaborativeSurplusTests(unittest.TestCase):
 
 
 class RecoveryHeuristicTests(unittest.TestCase):
-    def model(self, rule, regime="EA",seed=5, severity=.5):
+    def model(self, rule, mode="EA",seed=5, severity=.5):
         p={**PARAMS,"N":36,"C":3,"T":4,"innovation_horizon":5,
-           "seed":seed,"regime":regime,"shock_type":"random",
+           "seed":seed,"mode":mode,"shock_type":"random",
            "shock_severity":severity,
            "ea_partner_rule":rule,"knowledge_production_rule":"bounded_surplus"}
         m=RecoveryModel(p)
@@ -104,10 +104,10 @@ class RecoveryHeuristicTests(unittest.TestCase):
         while m.running: m.step()
         return m,pre_knowledge,shocked
 
-    def test_non_ea_regimes_unchanged_by_ea_selection(self):
-        for regime in ("DS","DA","ES"):
-            a,ka,ga=self.model("uniform",regime=regime)
-            b,kb,gb=self.model("community_gap",regime=regime)
+    def test_non_ea_modes_unchanged_by_ea_selection(self):
+        for mode in ("DS","DA","ES"):
+            a,ka,ga=self.model("uniform",mode=mode)
+            b,kb,gb=self.model("community_gap",mode=mode)
             np.testing.assert_array_equal(ka,kb)
             self.assertEqual(ga,gb)
             self.assertEqual(set(a.G.edges()),set(b.G.edges()))
@@ -125,9 +125,9 @@ class RecoveryHeuristicTests(unittest.TestCase):
             self.assertEqual(a.innovation_results[key],b.innovation_results[key])
         self.assertGreaterEqual(a.innovation_results["snapshots"]["post_end"]["mean_effective_domains"],1)
 
-    def test_no_shock_all_regimes_equal_to_intact(self):
-        for regime in ("DS","DA","ES","EA"):
-            m,_,_=self.model("community_gap",regime=regime,severity=0.)
+    def test_no_shock_all_modes_equal_to_intact(self):
+        for mode in ("DS","DA","ES","EA"):
+            m,_,_=self.model("community_gap",mode=mode,severity=0.)
             self.assertAlmostEqual(
                 m.innovation_results["R_K_vs_intact_paused"],0,places=10
             )

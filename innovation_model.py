@@ -154,7 +154,7 @@ def collaborative_increment(pooled, own, partner, params, initial_pool=None):
     This preserves Scott's finite per-event cap; equal-composition partners
     receive no premium, irrespective of knowledge scale. Pooling is controlled
     by the existing decomposability parameter theta. The multiplier gamma
-    is shared by every regime and does not depend on partner communities.
+    is shared by every mode and does not depend on partner communities.
     """
     base = knowledge_increment(pooled, params, initial_pool)
     if params.get("knowledge_production_rule", "ces_stock") != "bounded_surplus":

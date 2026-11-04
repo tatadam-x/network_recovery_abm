@@ -31,8 +31,8 @@ class ReleaseComparisonTests(unittest.TestCase):
         self.assertTrue(np.isfinite(summary.knowledge_gain).all())
         self.assertEqual(summary.original_ties_total.nunique(),1)
         self.assertEqual(summary.seed.nunique(),1)
-        self.assertTrue({"time","regime","active_pre_shock_ties"}.issubset(recovery))
-        self.assertTrue({"phase","period","regime","total_knowledge"}.issubset(innovation))
+        self.assertTrue({"time","mode","active_pre_shock_ties"}.issubset(recovery))
+        self.assertTrue({"phase","period","mode","total_knowledge"}.issubset(innovation))
         self.assertTrue(np.isfinite(
             summary["knowledge_gain_pct_vs_first_stage"].to_numpy()).all())
 
@@ -40,8 +40,8 @@ class ReleaseComparisonTests(unittest.TestCase):
         summary,_,_ = self._run(all_chain_scenarios())
         self.assertEqual(len(summary),20)
         for mode in BASE_MODES:
-            a=summary.loc[summary.regime==mode].iloc[0]
-            b=summary.loc[summary.regime==f"{mode}->{mode}"].iloc[0]
+            a=summary.loc[summary["mode"]==mode].iloc[0]
+            b=summary.loc[summary["mode"]==f"{mode}->{mode}"].iloc[0]
             for key in ("knowledge_gain","original_ties_retained",
                         "new_ties","recovery_cost"):
                 self.assertAlmostEqual(float(a[key]),float(b[key]))

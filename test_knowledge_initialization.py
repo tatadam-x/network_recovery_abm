@@ -103,10 +103,10 @@ except ImportError:
 
 @unittest.skipUnless(MESA_AVAILABLE,"Mesa unavailable")
 class V5IntegrationTests(unittest.TestCase):
-    def run_model(self,init,production,regime="EA",seed=21):
+    def run_model(self,init,production,mode="EA",seed=21):
         p={**PARAMS,"N":30,"C":3,"T":3,"innovation_horizon":4,
            "shock_type":"random","shock_severity":.5,
-           "regime":regime,"seed":seed,
+           "mode":mode,"seed":seed,
            "knowledge_init_rule":init,
            "knowledge_production_rule":production}
         m=RecoveryModel(p)
@@ -130,7 +130,7 @@ class V5IntegrationTests(unittest.TestCase):
         for init in ("dirichlet","gaussian"):
             for prod in ("bounded_ces","ces_stock"):
                 p={**PARAMS,"N":24,"C":3,"T":3,"innovation_horizon":3,
-                   "regime":"EA","shock_severity":0,
+                   "mode":"EA","shock_severity":0,
                    "knowledge_init_rule":init,
                    "knowledge_production_rule":prod}
                 m=RecoveryModel(p)

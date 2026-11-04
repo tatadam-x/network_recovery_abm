@@ -28,7 +28,7 @@ PARAMS = {
     "N": 100,                       # number of firms
     "T": 10,                        # structural recovery horizon, post-shock periods
     "seed": 1,                      # random seed
-    "regime": "HY",                 # DS, DA, ES, EA, HY
+    "mode": "HY",                 # DS, DA, ES, EA, HY
     "network_type": "modular_small_world",  # modular_small_world, random_erdos_renyi,
                                             # small_world, scale_free, core_periphery
     "baseline_perf": 1.0,
@@ -60,7 +60,7 @@ PARAMS = {
     "backup_cost": 0.5,             # cost of activating dormant backup tie
     "new_tie_cost": 1.5,            # cost of forming new tie
     "local_search_radius": 2,       # max graph distance for local substitute search
-    "central_pool_frac": 0.40,      # share of slack pooled in centralized regimes
+    "central_pool_frac": 0.40,      # share of slack pooled in centralized modes
     "rewiring_budget": 3,           # max new ties per period in DA
     "bridge_bonus": 0.20,           # extra value for cross-community ties
     "restore_threshold": 0.95,      # collective performance threshold for recovery
@@ -83,10 +83,10 @@ PARAMS = {
     "ea_target_novelty_fraction": 0.80,   # upper bound on new ties / disrupted original ties
     "ea_partner_rule": "uniform",      # community_gap or uniform
     "ea_exploration_prob": 0.35,         # global chance discovery vs two-hop local search
-    "chain_first": "DS",                 # first recovery regime for CHAIN
-    "chain_second": "EA",                # second recovery regime for CHAIN
+    "chain_first": "DS",                 # first recovery mode for CHAIN
+    "chain_second": "EA",                # second recovery mode for CHAIN
     "chain_switch_rule": "time",         # time, connectivity, restoration
-    "chain_switch_time": 5,             # number of full periods in first regime
+    "chain_switch_time": 5,             # number of full periods in first mode
     "chain_switch_threshold": 0.80,     # connectivity/restoration threshold
     # Deprecated parameters retained for backwards compatibility with old scripts
 
@@ -109,7 +109,7 @@ PARAMS = {
     "knowledge_init_rule": "dirichlet",   # structured Dirichlet or Gaussian
     "alpha_between": 40.0,         # Dirichlet community-profile concentration
     "alpha_within": 40.0,          # Dirichlet within-community concentration
-    "collaboration_prob": 0.50,    # p_C, fixed across recovery regimes
+    "collaboration_prob": 0.50,    # p_C, fixed across recovery modes
     "knowledge_production_rule": "bounded_surplus", # bounded_surplus, bounded_ces, or ces_stock
     "knowledge_scale": 0.01,       # A for legacy stock-proportional CES
     "bounded_max_increment": 0.24, # upper bound A for bounded CES (initial = A/4)
@@ -653,7 +653,7 @@ def update_system_metrics(model):
 
 class RecoveryModel(Model):
     """
-    Mesa model for network recovery regimes and resilience.
+    Mesa model for network recovery modes and resilience.
     """
 
     def __init__(self, params):
@@ -662,18 +662,18 @@ class RecoveryModel(Model):
         self.params = dict(params)
         self.seed = self.params["seed"]
         self.random.seed(self.seed)
-        # Exogenous reactivation must remain paired across regime runs,
+        # Exogenous reactivation must remain paired across mode runs,
         # irrespective of how many random decisions the recovery rule consumes.
         self.exogenous_rng = random.Random(self.seed + 65537)
         # Recovery draws and knowledge draws use separate generators.
         # This ensures identical PRE benchmarks and no-shock references
-        # across regimes run with the same seed.
+        # across modes run with the same seed.
         self.knowledge_rng = np.random.default_rng(self.seed + 104729)
 
         self._validate_innovation_parameters()
 
         self.t = 0                   # recovery time only: 0...T
-        self.regime = self.params["regime"]
+        self.mode = self.params["mode"]
         self.baseline_perf = self.params["baseline_perf"]
         self.running = True
         self.hybrid_switched = False
@@ -740,12 +740,12 @@ class RecoveryModel(Model):
                 self.affected_firms.add(i)
         update_system_metrics(self)
 
-        # The existing structural reporters remain in place until the
-        # structural performance and Streamlit revisions are designed.
+        # Structural measures are recorded for recovery trajectories.
+        # The legacy composite performance index is excluded from reports.
         self.datacollector = DataCollector(
             model_reporters={
                 "time": lambda m: m.t,
-                "regime": lambda m: m.regime,
+                "mode": lambda m: m.mode,
                 "perf_net": lambda m: m.perf_net,
                 "lcc_share": lambda m: m.lcc_share,
                 "fragmentation": lambda m: m.frag,
@@ -861,12 +861,12 @@ class RecoveryModel(Model):
         )
         self._write_knowledge(post_end)
         for i, successes in enumerate(post_participation):
-            # Compatibility with the current (provisional) Streamlit app.
+            # Preserve this agent-level diagnostic for existing consumers.
             self.agents_by_id[i].innovation_stock = int(successes)
 
         all_active = np.ones(n, dtype=bool)
         # Common post-benchmark state makes this an exact matched-start
-        # reference for every recovery regime using the same seed.
+        # reference for every recovery mode using the same seed.
         paused_rng = np.random.default_rng()
         paused_rng.bit_generator.state = copy.deepcopy(
             self._knowledge_rng_after_benchmark
@@ -905,7 +905,7 @@ class RecoveryModel(Model):
         )
         self.innovation_results.update({
             "seed": self.seed,
-            "regime": self.regime,
+            "mode": self.mode,
             "recovery_horizon": self.params["T"],
             "switch_at": self.switch_at,
             "final_recovery_mode": self.active_mode,
@@ -948,8 +948,8 @@ class RecoveryModel(Model):
         """Validate controllable recovery rules before the scenario is initialized."""
         p = self.params
         valid = ("DS", "DA", "ES", "EA", "HY", "CHAIN")
-        if p["regime"] not in valid:
-            raise ValueError(f"Unknown regime: {p['regime']}")
+        if p["mode"] not in valid:
+            raise ValueError(f"Unknown mode: {p['mode']}")
         if p["ea_partner_rule"] not in ("uniform", "community_gap"):
             raise ValueError("ea_partner_rule must be uniform or community_gap")
         if p["chain_first"] not in valid[:4] or p["chain_second"] not in valid[:4]:
@@ -977,15 +977,15 @@ class RecoveryModel(Model):
                 raise ValueError(f"{key} must be a positive integer.")
 
     def _initial_mode(self):
-        return "DS" if self.regime == "HY" else (
-            self.params["chain_first"] if self.regime == "CHAIN" else self.regime
+        return "DS" if self.mode == "HY" else (
+            self.params["chain_first"] if self.mode == "CHAIN" else self.mode
         )
 
     def _mode_for_period(self):
         """Switches are evaluated between recovery periods; no retroactive actions."""
-        if self.regime not in ("HY", "CHAIN"):
-            return self.regime
-        if self.regime == "HY":
+        if self.mode not in ("HY", "CHAIN"):
+            return self.mode
+        if self.mode == "HY":
             first, second, rule, when, threshold = (
                 "DS", "EA", "connectivity", None, self.params["hybrid_switch_perf"]
             )
@@ -1007,7 +1007,7 @@ class RecoveryModel(Model):
                 trigger = self.t > 1 and share >= threshold
             if trigger:
                 self.chain_switched = True
-                self.hybrid_switched = self.regime == "HY"
+                self.hybrid_switched = self.mode == "HY"
                 self.switch_at = self.t
         return second if self.chain_switched else first
 

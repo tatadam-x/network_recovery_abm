@@ -197,11 +197,11 @@ except ImportError:
 
 @unittest.skipUnless(MESA_AVAILABLE, "Mesa is not installed")
 class RecoveryIntegrationTests(unittest.TestCase):
-    def make_params(self, regime="DS"):
+    def make_params(self, mode="DS"):
         params = CORE_PARAMS.copy()
         params.update({
             "N": 24, "C": 3, "T": 3, "innovation_horizon": 4,
-            "regime": regime, "seed": 23, "shock_type": "random",
+            "mode": mode, "seed": 23, "shock_type": "random",
             "shock_severity": .5,
         })
         return params
@@ -229,7 +229,7 @@ class RecoveryIntegrationTests(unittest.TestCase):
         )
         self.assertGreater(result["post_knowledge_gain"], 0)
 
-    def test_paired_counterfactual_same_across_regimes(self):
+    def test_paired_counterfactual_same_across_modes(self):
         ds = RecoveryModel(self.make_params("DS"))
         ea = RecoveryModel(self.make_params("EA"))
         np.testing.assert_array_equal(ds.pre_knowledge_end, ea.pre_knowledge_end)
@@ -278,10 +278,10 @@ class RecoveryIntegrationTests(unittest.TestCase):
         self.assertAlmostEqual(result["R_F_vs_intact_paused"], 0.0)
         self.assertAlmostEqual(result["R_G_vs_intact_paused"], 0.0)
 
-    def test_all_regimes_common_intact_reference(self):
+    def test_all_modes_common_intact_reference(self):
         measurements = []
-        for regime in ("DS", "DA", "ES", "EA", "HY"):
-            model = RecoveryModel(self.make_params(regime))
+        for mode in ("DS", "DA", "ES", "EA", "HY"):
+            model = RecoveryModel(self.make_params(mode))
             while model.running:
                 model.step()
             measurements.append(model.innovation_results["intact_paused_knowledge_gain"])

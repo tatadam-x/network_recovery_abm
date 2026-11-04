@@ -6,9 +6,8 @@ venv/
 .env
 .streamlit/secrets.toml
 release_results/
-v5_screen/
-v6_screen/
 chain_screen/
 outputs/
 *.log
 .DS_Store
+comparison_results/

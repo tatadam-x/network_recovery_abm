@@ -67,13 +67,16 @@ Official deployment documentation:
 ## Verify the scientific comparison after deploying
 
 Run the recommended comparison with two paired seeds as a smoke test.
-Confirm that the **Aggregate knowledge production** table reports pre-shock,
-post-recovery and paused-intact production in separate columns.
-The four innovation trajectory charts should include both reference lines,
-and the gap charts should offer pre-shock and paused-intact comparisons.
+Confirm that the **Aggregate knowledge production** table reports
+post-recovery and paused-intact production and their paired difference.
+The first four innovation charts should show **post-recovery minus paused
+intact-network change**, each with a horizontal zero reference. Open
+**Absolute innovation trajectories** to inspect raw within-window changes
+against the paused intact network. Then open **Pre-shock benchmark diagnostics**
+to verify that historical pre-shock outcomes are still accessible separately.
 
-All three innovation windows should begin at zero on the change plots. The
-final gap at the last evaluation period should agree with the corresponding
-benchmark-adjusted outcome in the tables and CSV exports.
-The downloadable `benchmark_trajectories.csv` includes every within-window
-change and paired difference for auditing.
+The within-window change and gap plots should start at zero. The
+final intact-reference gap at the last evaluation period should agree with
+the corresponding reported outcome in the tables and CSV exports.
+The downloadable `benchmark_trajectories.csv` retains all pre-, post-, and
+intact-window changes and both paired comparisons for auditing.

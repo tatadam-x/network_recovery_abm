@@ -111,14 +111,22 @@ innovation window \(w\in\{PRE, POST, INTACT\}\). Each trajectory is plotted as
 \(Δ X_w(t)=X_w(t)-X_w(0)\), for \(t=0,\ldots,H\). This avoids comparing raw
 knowledge stocks observed at different points in the model's history.
 
-Two paired differences are available at every evaluation period:
-- **Post-recovery versus pre-shock:** \(Δ X_{POST}(t)-Δ X_{PRE}(t)\).
-- **Post-recovery versus paused intact-network:** \(Δ X_{POST}(t)-Δ X_{INTACT}(t)\).
+Two paired differences are retained at every evaluation period:
+- **Principal matched-start comparison:** \(Δ X_{POST}(t)-Δ X_{INTACT}(t)\), shown prominently in the application.
+- **Earlier historical pre-shock comparison:** \(Δ X_{POST}(t)-Δ X_{PRE}(t)\), available under **Pre-shock benchmark diagnostics**.
 
-The pre-shock and paused-intact curves are common to all recovery modes within
-each paired seed and are included **once** in each plotted reference mean.
-The endpoint values at \(t=H\) equal the reported benchmark-adjusted system
-outcomes. Aggregate production percentages use the paired reference's
+The main innovation charts present post-recovery gaps relative to the paused
+intact network, with zero meaning equal change since the evaluation window
+began. Absolute post-recovery and paused-intact trajectories are available in a
+collapsed secondary panel. The pre-shock trajectory and post-minus-pre gap
+are available on request in the diagnostic panel. The pre-shock window begins
+with lower accumulated knowledge, which affects growth independently of
+network reconstruction.
+
+The pre-shock and paused-intact references are common to all recovery modes
+within each paired seed and each reference is included **once** in averages.
+Endpoint values at \(t=H\) equal the reported benchmark-adjusted system
+outcomes. Production percentages use the paired reference's
 within-window production as their denominator.
 
 The paused intact network begins its innovation evaluation with the same

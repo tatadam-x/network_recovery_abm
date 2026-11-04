@@ -36,7 +36,7 @@ The app provides three comparison modes:
 
 The standard experiment uses **100 firms**, **10 recovery periods**, and **15 periods in each innovation window**. Paired seeds, alternative innovation formulations, and other technical assumptions appear under **Advanced settings**.
 
-Results prominently report **pre-shock, post-recovery, and paused-intact knowledge production** for equal-length windows, alongside paired percentage differences. Frontier advancement, changes in knowledge inequality, and effective knowledge diversity are also benchmark-adjusted. The charts show **cumulative within-window changes**, directly overlaying both pre-shock and intact-network references. Additional gap plots isolate differences against either reference. Structural recovery charts include pre-shock benchmark lines. All underlying observations are downloadable as CSV files.
+The main results compare **post-recovery innovation with a paused intact-network counterfactual**, using the same starting knowledge stocks and the same innovation window. The first figures show the paired gaps in knowledge production, frontier advancement, knowledge inequality, and knowledge diversity. Absolute post-recovery and paused-intact trajectories appear in an optional panel. Comparisons with the earlier pre-shock window remain available in a separate **Pre-shock benchmark diagnostics** section; because the system starts that window with less accumulated knowledge, this is a historical benchmark rather than the primary matched-start counterfactual. Structural recovery charts retain pre-shock network reference lines. All observations and both sets of benchmark-adjusted outcomes remain downloadable as CSV files.
 
 ## Command-line experiments
 

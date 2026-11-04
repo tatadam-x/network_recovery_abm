@@ -59,17 +59,25 @@ KNOWLEDGE_PLOTS = {
 }
 
 
-def plot_benchmark_trajectory(trajectories, outcome):
-    """Directly compare within-window pre, recovered and intact trajectories."""
+def plot_benchmark_trajectory(trajectories, outcome, include_pre=False):
+    """Compare within-window recovered and paused-intact trajectories.
+
+    The earlier pre-shock window is shown only in optional diagnostics:
+    its starting knowledge stocks differ from those in the evaluation window.
+    """
     title, ylabel = KNOWLEDGE_PLOTS[outcome]
     fig, ax = plt.subplots(figsize=(7.5, 4.2))
-    # Deduplicate references: every mode shares the same seed's pre and intact
-    # windows; otherwise the visual average would overweight duplicated rows.
+    # References are identical across modes within a seed. Deduplicate
+    # before averaging so each seed receives precisely one observation.
     ref = trajectories.drop_duplicates(["seed", "period"])
-    for col, label, style, color in [
-        (f"pre_{outcome}_change", "Pre-shock benchmark", "--", "#262626"),
-        (f"intact_{outcome}_change", "Paused intact network", ":", "#858585"),
-    ]:
+    references = [
+        (f"intact_{outcome}_change", "Paused intact network", ":", "#555555"),
+    ]
+    if include_pre:
+        references.insert(
+            0, (f"pre_{outcome}_change", "Pre-shock diagnostic", "--", "#999999")
+        )
+    for col, label, style, color in references:
         avg = ref.groupby("period", sort=True)[col].mean()
         ax.plot(avg.index, avg.values, label=label,
                 ls=style, color=color, linewidth=2.3)
@@ -80,7 +88,7 @@ def plot_benchmark_trajectory(trajectories, outcome):
         ax.plot(group["period"], group[f"post_{outcome}_change"],
                 label=display_label(key), lw=1.8, alpha=0.9)
     ax.axhline(0, color="#BBBBBB", lw=0.6)
-    ax.set(title=title, xlabel="Period within each equal-length innovation window",
+    ax.set(title=title, xlabel="Period within the innovation window",
            ylabel=ylabel)
     ax.grid(alpha=0.18)
     ax.legend(ncol=2, fontsize=7.6)
@@ -352,18 +360,21 @@ if "network_recovery_data" in st.session_state:
     # Fail visibly if the published outcome table contradicts the plotted data.
     check_summary_alignment(summary, benchmark_curves)
     st.caption(st.session_state["scenario_description"])
-    st.subheader("Benchmark-adjusted collective innovation")
+    st.subheader("Collective innovation after structural recovery")
     st.markdown(
-        "Each outcome is measured as the **change during its innovation window** "
-        "(using the window length selected in the sidebar). "
-        "The pre-shock benchmark, post-recovery evaluation, and paused intact-network "
-        "reference have equal durations. Knowledge is held constant during structural "
-        "recovery in both the recovered and the intact reference networks."
+        "The main comparison evaluates each recovered network against a "
+        "**paused intact-network reference**. Both have identical knowledge "
+        "stocks at the start of the evaluation window, the same learning "
+        "parameters, and the same innovation-free structural recovery interval. "
+        "Differences reflect the recovered network's relationships and any "
+        "remaining inactive firms."
     )
     st.caption(
-        "Positive differences in knowledge production, frontier advancement, and knowledge "
-        "diversity indicate higher post-recovery changes. A positive Gini difference means "
-        "knowledge inequality increased more (or decreased less) than in the reference window."
+        "All reported outcomes are changes within the evaluation window "
+        "(end minus start). Positive knowledge-production, frontier, and "
+        "diversity gaps indicate a greater change than the intact reference. "
+        "A positive Gini gap indicates a greater increase (or smaller decrease) "
+        "in knowledge inequality."
     )
 
     aggregate_columns = {
@@ -404,54 +415,45 @@ if "network_recovery_data" in st.session_state:
     aggregate["display_mode"] = aggregate["mode"].map(display_label)
 
     knowledge_table = aggregate[[
-        "display_mode", "pre_knowledge_gain", "post_knowledge_gain",
-        "intact_knowledge_gain", "knowledge_gap_vs_pre",
-        "knowledge_gap_pct_vs_pre", "knowledge_gap_pct_vs_intact",
+        "display_mode", "post_knowledge_gain", "intact_knowledge_gain",
+        "knowledge_gap_vs_intact", "knowledge_gap_pct_vs_intact",
     ]].rename(columns={
         "display_mode": "Recovery mode or chain",
-        "pre_knowledge_gain": "Pre-shock production",
         "post_knowledge_gain": "Post-recovery production",
         "intact_knowledge_gain": "Paused-intact production",
-        "knowledge_gap_vs_pre": "Post − pre (units)",
-        "knowledge_gap_pct_vs_pre": "Post vs pre (%)",
+        "knowledge_gap_vs_intact": "Post − intact (units)",
         "knowledge_gap_pct_vs_intact": "Post vs intact (%)",
     })
     st.markdown("**Aggregate knowledge production**")
     st.dataframe(knowledge_table.round(3), use_container_width=True,
                  hide_index=True)
     st.caption(
-        "Production is the total knowledge accumulated during the stated window. "
-        "Both percentage columns use each seed's own matched reference as denominator, "
-        "then average the paired percentages across seeds. "
-        "The pre-shock window occurs earlier in knowledge accumulation; its comparison "
-        "can reflect endogenous knowledge growth. The paused intact-network reference "
-        "controls for the starting knowledge stock and isolates the consequences "
-        "of the recovered network and remaining firm inactivity."
+        "Percentages average each seed's paired post-versus-intact difference "
+        "relative to that seed's intact-network production. "
+        "The intact reference is shared across recovery modes within each seed."
     )
 
     other_table = aggregate[[
-        "display_mode", "pre_frontier_gain", "post_frontier_gain",
-        "intact_frontier_gain", "frontier_gap_vs_pre", "frontier_gap_vs_intact",
-        "gini_gap_vs_pre", "gini_gap_vs_intact",
-        "diversity_gap_vs_pre", "diversity_gap_vs_intact",
+        "display_mode",
+        "post_frontier_gain", "frontier_gap_vs_intact",
+        "post_gini_change", "gini_gap_vs_intact",
+        "post_diversity_change", "diversity_gap_vs_intact",
     ]].rename(columns={
         "display_mode": "Recovery mode or chain",
-        "pre_frontier_gain": "Frontier pre",
-        "post_frontier_gain": "Frontier post",
-        "intact_frontier_gain": "Frontier intact",
-        "frontier_gap_vs_pre": "Frontier post − pre",
-        "frontier_gap_vs_intact": "Frontier post − intact",
-        "gini_gap_vs_pre": "Gini post − pre",
-        "gini_gap_vs_intact": "Gini post − intact",
-        "diversity_gap_vs_pre": "Diversity post − pre",
-        "diversity_gap_vs_intact": "Diversity post − intact",
+        "post_frontier_gain": "Frontier: post change",
+        "frontier_gap_vs_intact": "Frontier: post − intact",
+        "post_gini_change": "Gini: post change",
+        "gini_gap_vs_intact": "Gini: post − intact",
+        "post_diversity_change": "Diversity: post change",
+        "diversity_gap_vs_intact": "Diversity: post − intact",
     })
     st.markdown("**Frontier advancement, inequality, and knowledge diversity**")
     st.dataframe(other_table.round(4), use_container_width=True,
                  hide_index=True)
     st.caption(
-        "Frontier measures the mean of the highest knowledge stock in each domain. "
-        "Gini and diversity entries compare *within-window changes* (end minus start)."
+        "Frontier is the mean of dimension-specific maximum knowledge. "
+        "Gini and diversity refer to changes over each evaluation window; "
+        "their signs must be interpreted according to the measure."
     )
 
     if not st.session_state.get("scenario_is_custom"):
@@ -475,41 +477,38 @@ if "network_recovery_data" in st.session_state:
         benchmark_plot = benchmark_curves[
             benchmark_curves["mode"].isin(selected)
         ]
-        st.subheader("Innovation trajectories relative to both benchmarks")
+        st.subheader("Innovation differences from the intact-network reference")
         st.caption(
-            "All curves start at zero: each shows the cumulative change since the "
-            "beginning of its own equal-length window. Black dashed = intact pre-shock "
-            "benchmark; gray dotted = paused intact-network reference; solid = "
-            "post-recovery modes. Curves are averages over paired seeds."
+            "Each line is the mean within-seed difference between the cumulative "
+            "post-recovery change and the cumulative paused-intact change. "
+            "Zero means equal performance at that point in the evaluation window; "
+            "the final values match the main results table."
         )
-        for row_outcomes in (("knowledge", "frontier"), ("gini", "diversity")):
-            left, right = st.columns(2)
-            for col, outcome in zip((left, right), row_outcomes):
-                with col:
-                    render_figure(plot_benchmark_trajectory(benchmark_plot, outcome))
-        st.subheader("Benchmark-adjusted innovation differences")
-        st.caption(
-            "At each period, the plotted gap subtracts the comparison-window change "
-            "from the post-recovery change **within the same seed**. Zero indicates "
-            "equal performance. These differences align exactly with the reported "
-            "endpoint measures."
-        )
-        gap_reference_label = st.radio(
-            "Compare post-recovery change with",
-            ["Pre-shock benchmark", "Paused intact network"],
-            horizontal=True, index=0,
-            help="Pre-shock evaluates whether functioning recovers relative to the "
-                 "prior benchmark; paused intact isolates network-reconstruction effects.",
-        )
-        gap_reference = ("pre" if gap_reference_label.startswith("Pre")
-                         else "intact")
         for row_outcomes in (("knowledge", "frontier"), ("gini", "diversity")):
             left, right = st.columns(2)
             for col, outcome in zip((left, right), row_outcomes):
                 with col:
                     render_figure(plot_benchmark_gap(
-                        benchmark_plot, outcome, gap_reference
+                        benchmark_plot, outcome, "intact"
                     ))
+
+        with st.expander(
+            "Absolute innovation trajectories (post-recovery and intact)", expanded=False
+        ):
+            st.caption(
+                "These show cumulative within-window changes, starting at zero. "
+                "The dotted reference is the paused intact network; solid "
+                "lines are recovered modes. Small between-mode differences "
+                "can be easier to see in the gap figures above."
+            )
+            if st.checkbox("Show absolute innovation charts", value=False):
+                for row_outcomes in (("knowledge", "frontier"), ("gini", "diversity")):
+                    left, right = st.columns(2)
+                    for col, outcome in zip((left, right), row_outcomes):
+                        with col:
+                            render_figure(plot_benchmark_trajectory(
+                                benchmark_plot, outcome
+                            ))
 
         st.subheader("Structural recovery relative to the pre-shock network")
         st.caption(
@@ -570,11 +569,68 @@ if "network_recovery_data" in st.session_state:
             if len(times) else f"Custom chain {label}: switching condition was not reached."
         )
 
+    with st.expander("Pre-shock benchmark diagnostics (optional)", expanded=False):
+        st.caption(
+            "The pre-shock window begins with the firms' initial knowledge "
+            "endowments, whereas post-recovery evaluation begins after knowledge "
+            "has accumulated during the pre-shock window. Differences between "
+            "these windows therefore also reflect knowledge-system maturation. "
+            "The main results above use the matched-start paused intact reference."
+        )
+        pre_table = aggregate[[
+            "display_mode", "pre_knowledge_gain", "post_knowledge_gain",
+            "knowledge_gap_vs_pre", "knowledge_gap_pct_vs_pre",
+        ]].rename(columns={
+            "display_mode": "Recovery mode or chain",
+            "pre_knowledge_gain": "Pre-shock production",
+            "post_knowledge_gain": "Post-recovery production",
+            "knowledge_gap_vs_pre": "Post − pre (units)",
+            "knowledge_gap_pct_vs_pre": "Post vs pre (%)",
+        })
+        st.markdown("**Aggregate production relative to the earlier pre-shock window**")
+        st.dataframe(pre_table.round(3), use_container_width=True,
+                     hide_index=True)
+        pre_other_table = aggregate[[
+            "display_mode", "frontier_gap_vs_pre",
+            "gini_gap_vs_pre", "diversity_gap_vs_pre",
+        ]].rename(columns={
+            "display_mode": "Recovery mode or chain",
+            "frontier_gap_vs_pre": "Frontier: post − pre",
+            "gini_gap_vs_pre": "Gini: post − pre",
+            "diversity_gap_vs_pre": "Diversity: post − pre",
+        })
+        st.dataframe(pre_other_table.round(4), use_container_width=True,
+                     hide_index=True)
+        if selected:
+            show_pre_charts = st.checkbox(
+                "Show pre-shock diagnostic trajectories", value=False,
+                help="Display the earlier pre-shock window beside post-recovery "
+                     "and paused-intact trajectories, and the paired post–pre gap."
+            )
+            if show_pre_charts:
+                diagnostic_outcome = st.selectbox(
+                    "Diagnostic outcome",
+                    options=list(KNOWLEDGE_PLOTS),
+                    format_func=lambda x: KNOWLEDGE_PLOTS[x][0],
+                )
+                left, right = st.columns(2)
+                with left:
+                    render_figure(plot_benchmark_trajectory(
+                        benchmark_plot, diagnostic_outcome, include_pre=True
+                    ))
+                with right:
+                    render_figure(plot_benchmark_gap(
+                        benchmark_plot, diagnostic_outcome, "pre"
+                    ))
+        else:
+            st.caption("Select at least one recovery mode to see diagnostic charts.")
+
     st.subheader("Export research data")
     st.caption(
-        "The benchmark-aligned trajectories CSV contains every paired-seed "
-        "pre-, post-, and intact-window change and its two gap measures. "
-        "The innovation trajectories CSV also retains the raw levels for audit."
+        "The benchmark-aligned trajectories CSV retains per-seed pre-, post-, "
+        "and paused-intact changes and both paired gap measures, including "
+        "the optional pre-shock diagnostics. The innovation trajectories CSV "
+        "also retains the raw levels for audit."
     )
     x, y, z = st.columns(3)
     with x:
